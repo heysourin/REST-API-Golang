@@ -48,18 +48,20 @@ func addTodo(context *gin.Context) {
 	context.IndentedJSON(http.StatusCreated, newTodo)
 }
 
-func getTodoById(id string) (*todo, error) {
-	for i, t := range todos {
-		if t.ID == id {
-			return &todos[i], nil
-		}
-	}
-	return nil, errors.New("Todo not found")
+// func getTodoIndexById(id string) (*todo, error) {
+func getTodoIndexById(id string) (int, error) {
+    for i, t := range todos {
+        if t.ID == id {
+            return i, nil
+        }
+    }
+    return -1, errors.New("Todo not found")
 }
+
 
 func getTodo(context *gin.Context) {
 	id := context.Param("id")
-	todo, err := getTodoById(id)
+	todo, err := getTodoIndexById(id)
 	if err != nil {
 		context.IndentedJSON(http.StatusNotFound, gin.H{"message": "Todo not found"})
 		return
@@ -73,7 +75,7 @@ func updateTodo(context *gin.Context) {
 	id := context.Param("id")
 
 	// Find the todo item with the matching ID
-	todo, err := getTodoById(id)
+	todo, err := getTodoIndexById(id)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"message": "Todo not found"})
 		return
@@ -94,7 +96,7 @@ func deleteTodo(context *gin.Context) {
 	id := context.Param("id")
 
 	// Find the index of the todo item with the matching ID
-	index, err := getTodoById(id)
+	index, err := getTodoIndexById(id)
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{"message": "Todo not found"})
 		return

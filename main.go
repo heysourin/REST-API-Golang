@@ -28,7 +28,7 @@ func main() {
 	router.PUT("/todos/:id", updateTodo)    //Update
 	router.DELETE("/todos/:id", deleteTodo) //Delete
 
-	router.Run(":9000") // Corrected address
+	router.Run(":9000") // Port on local machine
 }
 
 func getTodos(context *gin.Context) {
@@ -36,28 +36,27 @@ func getTodos(context *gin.Context) {
 }
 
 func addTodo(context *gin.Context) {
-	// Data from addTodo will be inside the request body and should come as JSON
-	var newTodo = []todo{} // create an array of struct if you want to send multiple json data at once --> Take care about the append function
+	var newTodo = []todo{} // Creating a variable of todo struct to send payload with it
 
 	err := context.BindJSON(&newTodo)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	todos = append(todos, newTodo...)
+
+	todos = append(todos, newTodo...) // adding the payload data to the existing data
 	context.IndentedJSON(http.StatusCreated, newTodo)
 }
 
-// func getTodoIndexById(id string) (*todo, error) {
+// Checkpoint: requested id exists or not
 func getTodoIndexById(id string) (int, error) {
-    for i, t := range todos {
-        if t.ID == id {
-            return i, nil
-        }
-    }
-    return -1, errors.New("Todo not found")
+	for i, t := range todos {
+		if t.ID == id {
+			return i, nil
+		}
+	}
+	return -1, errors.New("Todo not found")
 }
-
 
 func getTodo(context *gin.Context) {
 	id := context.Param("id")
@@ -67,12 +66,11 @@ func getTodo(context *gin.Context) {
 		return
 
 	}
-	context.IndentedJSON(http.StatusOK, todo)
+	context.IndentedJSON(http.StatusOK, todos[todo])
 }
 
 func updateTodo(context *gin.Context) {
-	// Get the ID parameter from the URL
-	id := context.Param("id")
+	id := context.Param("id") // Get the ID parameter from the URL
 
 	// Find the todo item with the matching ID
 	todo, err := getTodoIndexById(id)
@@ -87,13 +85,11 @@ func updateTodo(context *gin.Context) {
 		return
 	}
 
-	// Respond with the updated todo
-	context.IndentedJSON(http.StatusOK, todo)
+	context.IndentedJSON(http.StatusOK, todo) // Respond with the updated todo
 }
 
 func deleteTodo(context *gin.Context) {
-	// Get the ID parameter from the URL
-	id := context.Param("id")
+	id := context.Param("id") // Get the ID parameter from the URL
 
 	// Find the index of the todo item with the matching ID
 	index, err := getTodoIndexById(id)
@@ -102,9 +98,7 @@ func deleteTodo(context *gin.Context) {
 		return
 	}
 
-	// Remove the todo item from the todos slice
-	todos = append(todos[:index], todos[index+1:]...)
+	todos = append(todos[:index], todos[index+1:]...) // Remove the todo item from the todos slice
 
-	// Respond with a message to confirm the deletion
-	context.JSON(http.StatusOK, gin.H{"message": "Todo deleted"})
+	context.JSON(http.StatusOK, gin.H{"message": "Todo deleted"}) // Respond with a message to confirm the deletion
 }
